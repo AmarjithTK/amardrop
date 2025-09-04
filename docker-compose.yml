@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: file_upload_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - AMARDROP_PASSWORD=changeMe123
+    volumes:
+      - uploads_data:/app/uploads
+      - ./files.db:/app/files.db
+      - ./templates:/app/templates
+
+volumes:
+  uploads_data:
