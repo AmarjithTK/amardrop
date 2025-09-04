@@ -1,0 +1,20 @@
+write a gitignore file for a Python project
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class      
+#include everything inside v
+
+envs/
+
+# Virtual environments
+venv/
+env/
+.env/
+uploads/
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+
