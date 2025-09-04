@@ -4,20 +4,16 @@
     <meta charset="UTF-8">
     <title>Multi File Upload</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Dropzone.js CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@6.0.0-beta.2/dist/dropzone.css" />
+    <script src="https://unpkg.com/dropzone@6.0.0-beta.2/dist/dropzone-min.js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h1 class="text-2xl font-bold mb-4">Upload Files</h1>
-        <form method="POST" enctype="multipart/form-data" class="space-y-4">
-            <input type="file" name="files" multiple class="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100
-            "/>
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload</button>
-        </form>
+        <!-- Dropzone Form -->
+        <form action="/" method="POST" enctype="multipart/form-data" class="dropzone" id="file-dropzone"></form>
+        <button id="submit-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-4">Upload</button>
         {% if files %}
             <div class="mt-6">
                 <h2 class="text-lg font-semibold mb-2">Uploaded Files:</h2>
@@ -29,5 +25,28 @@
             </div>
         {% endif %}
     </div>
+    <script>
+        // Prevent Dropzone from auto discovering the form
+        Dropzone.autoDiscover = false;
+        const dz = new Dropzone("#file-dropzone", {
+            url: "/",
+            paramName: "files",
+            maxFilesize: 10, // MB
+            parallelUploads: 10,
+            autoProcessQueue: false,
+            addRemoveLinks: true,
+            dictDefaultMessage: "Drag and drop files here or click to select",
+        });
+
+        document.getElementById('submit-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            dz.processQueue();
+        });
+
+        dz.on("queuecomplete", function() {
+            window.location.href = "/dashboard";
+        });
+    </script>
 </body>
+</html>
 </html>
