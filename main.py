@@ -1,18 +1,24 @@
-from fastapi import FastAPI, UploadFile, Form, HTTPException, Depends, Request
+from fastapi import FastAPI, UploadFile, Form, HTTPException, Depends, Request, Response
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware import Middleware
 from datetime import datetime, timedelta
-import os, sqlite3, json
-import threading
-import time
+import os, sqlite3, json, threading, time, re
+import bcrypt
 
 app = FastAPI()
 
 UPLOAD_DIR = "uploads"
 TEMPLATES_DIR = "templates"
-PASSWORD = "123"  # replace with env var in prod
 MAX_SIZE = 50 * 1024 * 1024  # 50MB
+MAX_FILES = 10  # Max files per upload
+ALLOWED_EXTENSIONS = {'.pdf', '.jpg', '.jpeg', '.png', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'}
+
+# Secure password from env and hash
+RAW_PASSWORD = os.environ.get("AMARDROP_PASSWORD", "changeMe123")
+PASSWORD_HASH = bcrypt.hashpw(RAW_PASSWORD.encode(), bcrypt.gensalt())
 
 # Ensure uploads directory exists
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -30,9 +36,35 @@ conn.commit()
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
+# Secure headers middleware
+@app.middleware("http")
+async def secure_headers(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; "
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; "
+        "font-src 'self' https://cdn.tailwindcss.com https://unpkg.com; "
+        "img-src 'self' data: blob:;"
+    )
+    return response
+
 def check_password(pw: str = Form(...)):
-    if pw != PASSWORD:
+    if not bcrypt.checkpw(pw.encode(), PASSWORD_HASH):
         raise HTTPException(status_code=401, detail="Invalid password")
+
+def is_safe_filename(filename):
+    # Prevent directory traversal and enforce allowed extensions
+    if "/" in filename or "\\" in filename or ".." in filename:
+        return False
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in ALLOWED_EXTENSIONS
+
+def is_safe_slug(slug):
+    return re.match(r'^[a-zA-Z0-9]+$', slug) is not None
 
 @app.get("/", response_class=None)
 def upload_form(request: Request):
@@ -49,8 +81,12 @@ async def upload(
     files = form.getlist("files")
     if days > 7:
         raise HTTPException(400, "Max expiry is 7 days")
-    if not slug.isalnum():
+    if not is_safe_slug(slug):
         raise HTTPException(400, "Slug must be alphanumeric")
+    if len(files) == 0:
+        raise HTTPException(400, "At least one file required")
+    if len(files) > MAX_FILES:
+        raise HTTPException(400, f"Max {MAX_FILES} files per upload")
 
     total_size = 0
     os.makedirs(f"{UPLOAD_DIR}/{slug}", exist_ok=True)
@@ -76,11 +112,14 @@ async def upload(
 
     paths = []
     for file in files:
+        filename = os.path.basename(file.filename)
+        if not is_safe_filename(filename):
+            raise HTTPException(400, f"Unsafe or disallowed file type: {filename}")
         content = await file.read()
         total_size += len(content)
         if total_size > MAX_SIZE:
             raise HTTPException(400, "Upload exceeds 50MB limit")
-        path = f"{UPLOAD_DIR}/{slug}/{file.filename}"
+        path = f"{UPLOAD_DIR}/{slug}/{filename}"
         with open(path, "wb") as f:
             f.write(content)
         if path not in paths:
@@ -123,10 +162,12 @@ def get_files(request: Request, slug: str):
 
 @app.get("/download/{slug}/{filename}")
 def download_file(slug: str, filename: str):
-    path = f"{UPLOAD_DIR}/{slug}/{filename}"
+    # Prevent directory traversal
+    safe_filename = os.path.basename(filename)
+    path = f"{UPLOAD_DIR}/{slug}/{safe_filename}"
     if not os.path.exists(path):
         raise HTTPException(404, "File not found")
-    return FileResponse(path, filename=filename)
+    return FileResponse(path, filename=safe_filename)
 
 def cleanup_expired():
     while True:
