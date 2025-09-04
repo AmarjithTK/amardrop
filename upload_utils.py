@@ -69,7 +69,7 @@ async def check_password(request):
     pw = form["pw"]
     
     # Replace this with your actual password check
-    expected_password = "upload123"  # Change this to your secure password
+    expected_password = "123"  # Change this to your secure password
     if pw != expected_password:
         raise HTTPException(401, "Invalid password")
     

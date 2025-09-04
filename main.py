@@ -80,26 +80,32 @@ def create_app():
             row = cur.fetchone()
             existing_expiry = None
             if row:
-                existing_expiry, _ = row
+                existing_expiry, existing_files_json = row
                 if datetime.utcnow() <= datetime.fromisoformat(existing_expiry):
-                    raise HTTPException(409, "Slug is already in use and not expired")
-                # Cleanup old files
-                folder = os.path.join(UPLOAD_DIR, slug)
-                if os.path.isdir(folder):
-                    for f in os.listdir(folder):
-                        try:
-                            os.remove(os.path.join(folder, f))
-                        except Exception:
-                            pass
+                    # Slug is in use and not expired, merge new files with existing
+                    existing_files = json.loads(existing_files_json)
+                else:
+                    # Expired, cleanup old files
+                    folder = os.path.join(UPLOAD_DIR, slug)
+                    if os.path.isdir(folder):
+                        for f in os.listdir(folder):
+                            try:
+                                os.remove(os.path.join(folder, f))
+                            except Exception:
+                                pass
+                    existing_files = []
+            else:
+                existing_files = []
 
             # Modular upload handling
             saved_files, total_size = await process_uploads(files, UPLOAD_DIR, slug)
+            all_files = existing_files + saved_files
             if total_size > MAX_SIZE:
                 raise HTTPException(400, "Upload exceeds 50MB limit")
 
             expiry = datetime.utcnow() + timedelta(days=days)
             cur.execute("INSERT OR REPLACE INTO links (slug, expiry, files) VALUES (?, ?, ?)",
-                        (slug, expiry.isoformat(), json.dumps(saved_files)))
+                        (slug, expiry.isoformat(), json.dumps(all_files)))
             conn.commit()
 
             return RedirectResponse(f"/{slug}", status_code=303)
