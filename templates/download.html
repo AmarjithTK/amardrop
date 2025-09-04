@@ -1,26 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
+        <link rel="icon" type="image/x-icon" href="./favicon.ico">
+
+
     <title>amardrop</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media (max-width: 640px) {
+            .responsive-container {
+                margin: 1rem !important;
+                padding: 1.25rem !important;
+            }
+            .responsive-title {
+                font-size: 1.75rem !important;
+            }
+            .responsive-subtitle {
+                font-size: 0.875rem !important;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-purple-100 to-blue-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-4 text-purple-700 text-center">
-            amardrop<br>
-            <span class="text-base font-normal text-gray-500">Property of Atherpulse Technologies</span>
-            <div class="mt-2">Files for <span class="font-mono text-blue-700">{{ slug }}</span></div>
+<body class="bg-gradient-to-br from-purple-100 to-blue-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full max-w-md mx-auto responsive-container">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2 text-purple-700 text-center responsive-title">
+            amardrop
+            <span class="block text-sm md:text-base font-normal text-gray-500 mt-1 responsive-subtitle">Property of Atherpulse Technologies</span>
+            <div class="mt-4 text-lg font-medium">Files for <span class="font-mono text-blue-700 bg-blue-50 px-2 py-1 rounded">{{ slug }}</span></div>
         </h1>
-        <ul class="list-disc pl-5 mb-4">
-            {% for file in files %}
-                <li>
-                    <a href="{{ file.url }}" class="text-blue-600 hover:underline font-semibold">{{ file.name }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-        <p class="mt-2 text-gray-500 text-center">Expires: <span class="font-mono">{{ expiry }}</span></p>
-        <a href="/" class="block mt-6 text-purple-600 hover:underline text-center">Upload more files</a>
+        
+        <div class="mt-6">
+            <ul class="space-y-3">
+                {% for file in files %}
+                    <li class="flex items-center">
+                        <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        <a href="{{ file.url }}" class="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors">
+                            {{ file.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-gray-100">
+            <p class="text-gray-600 text-center text-sm">
+                Expires: <span class="font-mono bg-gray-100 px-2 py-1 rounded">{{ expiry }}</span>
+            </p>
+            <a href="/" class="block mt-4 text-purple-600 hover:text-purple-800 text-center font-medium transition-colors hover:underline">
+                Upload more files
+            </a>
+        </div>
     </div>
 </body>
 </html>

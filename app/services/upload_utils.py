@@ -67,9 +67,9 @@ async def check_password(request):
     if "pw" not in form:
         raise HTTPException(401, "Password required")
     pw = form["pw"]
-    
-    # Replace this with your actual password check
-    expected_password = "123"  # Change this to your secure password
+
+    # Get password from environment variable or use default
+    expected_password = os.environ.get("UPLOAD_PASSWORD", "123")
     if pw != expected_password:
         raise HTTPException(401, "Invalid password")
     

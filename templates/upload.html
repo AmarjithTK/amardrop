@@ -5,6 +5,8 @@
     <title>amardrop</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="icon" type="image/x-icon" href="./favicon.ico">
+
     <!-- Dropzone.js CDN -->
     <link rel="stylesheet" href="https://unpkg.com/dropzone@6.0.0-beta.2/dist/dropzone.css" />
     <script src="https://unpkg.com/dropzone@6.0.0-beta.2/dist/dropzone-min.js"></script>
@@ -14,35 +16,62 @@
             border-radius: 0.75rem;
             background: #f3f0ff;
         }
+        @media (max-width: 640px) {
+            .responsive-padding {
+                padding: 1rem !important;
+            }
+            .responsive-title {
+                font-size: 1.75rem !important;
+                margin-bottom: 1rem !important;
+            }
+            .responsive-footer {
+                margin-top: 1rem !important;
+                font-size: 0.75rem !important;
+            }
+            .responsive-container {
+                margin: 0.5rem !important;
+                width: calc(100% - 1rem) !important;
+            }
+            .dropzone {
+                min-height: 120px !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen flex items-center justify-center w-full">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-4xl mx-4">
-    <h1 class="text-4xl font-extrabold mb-8 text-purple-700 text-center">amardrop</h1>
-        <form id="main-form" action="/" method="post" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <div class="space-y-6">
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen p-0 m-0 flex flex-col items-center justify-center">
+    <div class="responsive-container bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-lg w-full max-w-[95%] md:max-w-3xl mx-auto">
+        <h1 class="responsive-title text-3xl md:text-4xl font-extrabold mb-6 text-purple-700 text-center">amardrop</h1>
+        <form id="main-form" action="/" method="post" enctype="multipart/form-data"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 items-start">
+            <div class="space-y-4 md:space-y-6">
                 <div>
                     <label class="block mb-1 font-semibold text-gray-700">Password</label>
-                    <input type="password" name="pw" id="pw" placeholder="Password" required class="block w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <input type="password" name="pw" id="pw" placeholder="Password" required
+                           class="block w-full px-3 py-2 responsive-input border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400" />
                 </div>
                 <div>
                     <label class="block mb-1 font-semibold text-gray-700">Custom URL Slug</label>
-                    <input type="text" name="slug" id="slug" placeholder="e.g. mydocs" required class="block w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <input type="text" name="slug" id="slug" placeholder="e.g. mydocs" required
+                           class="block w-full px-3 py-2 responsive-input border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400" />
                 </div>
                 <div>
                     <label class="block mb-1 font-semibold text-gray-700">Expiry (days, max 7)</label>
-                    <input type="number" name="days" id="days" min="1" max="7" value="1" required class="block w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <input type="number" name="days" id="days" min="1" max="7" value="1" required
+                           class="block w-full px-3 py-2 responsive-input border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400" />
                 </div>
-                <button id="submit-btn" type="submit" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 transition">Upload</button>
+                <button id="submit-btn" type="submit"
+                        class="w-full bg-purple-600 text-white px-4 py-2 responsive-btn rounded-lg font-bold hover:bg-purple-700 transition">
+                    Upload
+                </button>
                 <div id="error-msg" class="mt-4 text-red-600 text-center font-semibold"></div>
             </div>
-            <div>
+            <div class="mt-4 md:mt-0">
                 <label class="block mb-2 font-semibold text-gray-700">Files</label>
-                <div id="file-dropzone" class="dropzone w-full min-h-[300px]"></div>
+                <div id="file-dropzone" class="dropzone w-full"></div>
             </div>
         </form>
     </div>
-    <footer class="mt-8 text-center text-gray-500 text-sm">
+    <footer class="responsive-footer mt-6 text-center text-gray-500 text-xs md:text-sm">
         Property of Atherpulse Technologies
     </footer>
     <script>
@@ -117,5 +146,7 @@
             window.location.href = "/" + dz.options.params.slug;
         });
     </script>
+</body>
+</html>
 </body>
 </html>
