@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: file_upload_app
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads_data:/app/uploads  # Use a named volume for uploads
+      - ./files.db:/app/files.db   # Keep database file persistent
+    environment:
+      - UPLOAD_PASSWORD=your_secure_password
+      - MAX_SIZE=52428800  # 50MB in bytes
+      - MAX_FILES=50
+      - MAX_EXPIRY_DAYS=7
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - upload_net
+
+  # Optional nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: file_upload_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+    networks:
+      - upload_net
+
+networks:
+  upload_net:
+    driver: bridge
+
+volumes:
+  uploads_data:  # Named volume for uploads
