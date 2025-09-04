@@ -159,5 +159,27 @@ def start_cleanup_thread():
     t = threading.Thread(target=cleanup_expired, daemon=True)
     t.start()
 
+# Possible anomalies users could experience:
+# 1. Upload fails if slug is already in use and not expired (409 error).
+# 2. Upload fails if total file size exceeds 50MB (400 error).
+# 3. Upload fails if password is incorrect (401 error).
+# 4. Upload fails if expiry days > 7 (400 error).
+# 5. Upload fails if slug contains non-alphanumeric characters (400 error).
+# 6. Download fails if file does not exist (404 error).
+# 7. Download page fails if slug does not exist (404 error).
+# 8. Download page fails if slug is expired (410 error).
+# 9. If two users try to upload to the same slug at the same time, one will get a 409 error.
+# 10. If files are deleted manually from disk, download links will break (404 error).
+# 11. If database or disk is full, uploads may silently fail or cause server errors.
+# 12. If server restarts, background cleanup thread may not run immediately.
+# 13. If template files are missing or corrupted, pages will not render.
+# 14. If user uploads files with the same name as existing files in the slug, old files are overwritten.
+# 15. If browser or network disconnects during upload, files may be partially saved.
+# 16. If SQLite database gets locked or corrupted, all operations may fail.
+# 17. If user tries to upload zero files, the slug will be created with no files.
+# 18. If system time changes (e.g., daylight saving), expiry calculations may be affected.
+# 19. If a slug is reused immediately after expiry, old files may not be fully cleaned up before new upload.
+# 20. If multiple users upload large files simultaneously, server performance may degrade.
+
 
 
