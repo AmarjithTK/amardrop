@@ -7,7 +7,7 @@ from starlette.middleware import Middleware
 from datetime import datetime, timedelta
 import os, sqlite3, json, threading, time, re, zipfile, io
 import bcrypt
-from upload_utils import process_uploads, is_safe_slug, check_password
+from app.services.upload_utils import process_uploads, is_safe_slug, check_password
 
 def create_app():
     app = FastAPI()
